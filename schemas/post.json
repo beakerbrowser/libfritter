@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "type": "object",
+  "properties": {
+    "text": {"type": "string"},
+    "threadRoot": {"type": "string", "format": "uri"},
+    "threadParent": {"type": "string", "format": "uri"},
+    "createdAt": {"type": "number"}
+  },
+  "required": ["text", "createdAt"]
+}

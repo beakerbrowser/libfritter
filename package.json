@@ -1,0 +1,31 @@
+{
+  "name": "libfritter",
+  "version": "1.0.0",
+  "description": "Data definitions and methods for Fritter",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "ava -s test/api.js"
+  },
+  "keywords": [
+    "dat",
+    "beaker",
+    "fritter"
+  ],
+  "author": "Paul Frazee <pfrazee@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@beaker/webdb": "^2.1.2",
+    "monotonic-timestamp-base36": "^1.0.0",
+    "normalize-url": "^2.0.0",
+    "slugify-url": "^1.2.0"
+  },
+  "devDependencies": {
+    "ava": "^0.24.0",
+    "node-dat-archive": "^1.6.0",
+    "tempy": "^0.2.1"
+  }
+}
