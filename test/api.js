@@ -4,7 +4,7 @@ const tempy = require('tempy')
 const LibFritter = require('../')
 const fs = require('fs')
 
-var libfritter
+var fritter
 
 var alice
 var bob
@@ -19,56 +19,56 @@ test.before('archive creation', async t => {
   ])
 
   // setup libfritter
-  libfritter = new LibFritter(tempy.directory(), {DatArchive})
-  await libfritter.open()
-  await libfritter.prepareArchive(alice)
-  await libfritter.prepareArchive(bob)
-  await libfritter.prepareArchive(carla)
-  await libfritter.addSource([alice, bob, carla])
+  fritter = new LibFritter(tempy.directory(), {DatArchive})
+  await fritter.open()
+  await fritter.prepareArchive(alice)
+  await fritter.prepareArchive(bob)
+  await fritter.prepareArchive(carla)
+  await fritter.addSource([alice, bob, carla])
 })
 
 test.after('close db', async t => {
-  await libfritter.db.close()
+  await fritter.db.close()
 })
 
 test('profile data', async t => {
   // write profiles
-  await libfritter.social.setProfile(alice, {
+  await fritter.social.setProfile(alice, {
     name: 'Alice',
     bio: 'A cool hacker girl',
     avatar: 'alice.png',
     follows: [{name: 'Bob', url: bob.url}, {name: 'Carla', url: carla.url}]
   })
-  await libfritter.social.setProfile(bob, {
+  await fritter.social.setProfile(bob, {
     name: 'Bob',
     avatar: 'bob.png',
     bio: 'A cool hacker guy'
   })
   const avatarBuffer = fs.readFileSync('avatar.jpg').buffer
-  await libfritter.social.setAvatar(bob, avatarBuffer, 'jpg')
-  await libfritter.social.follow(bob, alice, 'Alice')
-  await libfritter.social.setProfile(carla, {
+  await fritter.social.setAvatar(bob, avatarBuffer, 'jpg')
+  await fritter.social.follow(bob, alice, 'Alice')
+  await fritter.social.setProfile(carla, {
     name: 'Carla'
   })
-  await libfritter.social.follow(carla, alice)
+  await fritter.social.follow(carla, alice)
 
   // verify data
   t.truthy(await bob.stat('/avatar.jpg'))
-  t.deepEqual(profileSubset(await libfritter.social.getProfile(alice)), {
+  t.deepEqual(profileSubset(await fritter.social.getProfile(alice)), {
     name: 'Alice',
     bio: 'A cool hacker girl',
     avatar: 'alice.png',
     followUrls: [bob.url, carla.url],
     follows: [{name: 'Bob', url: bob.url}, {name: 'Carla', url: carla.url}]
   })
-  t.deepEqual(profileSubset(await libfritter.social.getProfile(bob)), {
+  t.deepEqual(profileSubset(await fritter.social.getProfile(bob)), {
     name: 'Bob',
     bio: 'A cool hacker guy',
     avatar: 'avatar.jpg',
     followUrls: [alice.url],
     follows: [{name: 'Alice', url: alice.url}]
   })
-  t.deepEqual(profileSubset(await libfritter.social.getProfile(carla)), {
+  t.deepEqual(profileSubset(await fritter.social.getProfile(carla)), {
     name: 'Carla',
     bio: undefined,
     avatar: undefined,
@@ -79,20 +79,20 @@ test('profile data', async t => {
 
 test('votes', async t => {
   // vote
-  await libfritter.feed.vote(alice, {subject: 'https://beakerbrowser.com', vote: 1})
-  await libfritter.feed.vote(bob, {subject: 'https://beakerbrowser.com', vote: 1})
-  await libfritter.feed.vote(carla, {subject: 'https://beakerbrowser.com', vote: 1})
-  await libfritter.feed.vote(alice, {subject: 'dat://beakerbrowser.com', vote: 1})
-  await libfritter.feed.vote(bob, {subject: 'dat://beakerbrowser.com', vote: 0})
-  await libfritter.feed.vote(carla, {subject: 'dat://beakerbrowser.com', vote: -1})
-  await libfritter.feed.vote(alice, {subject: 'dat://bob.com/posts/1.json', vote: -1})
-  await libfritter.feed.vote(bob, {subject: 'dat://bob.com/posts/1.json', vote: -1})
-  await libfritter.feed.vote(carla, {subject: 'dat://bob.com/posts/1.json', vote: -1})
+  await fritter.feed.vote(alice, {subject: 'https://beakerbrowser.com', vote: 1})
+  await fritter.feed.vote(bob, {subject: 'https://beakerbrowser.com', vote: 1})
+  await fritter.feed.vote(carla, {subject: 'https://beakerbrowser.com', vote: 1})
+  await fritter.feed.vote(alice, {subject: 'dat://beakerbrowser.com', vote: 1})
+  await fritter.feed.vote(bob, {subject: 'dat://beakerbrowser.com', vote: 0})
+  await fritter.feed.vote(carla, {subject: 'dat://beakerbrowser.com', vote: -1})
+  await fritter.feed.vote(alice, {subject: 'dat://bob.com/posts/1.json', vote: -1})
+  await fritter.feed.vote(bob, {subject: 'dat://bob.com/posts/1.json', vote: -1})
+  await fritter.feed.vote(carla, {subject: 'dat://bob.com/posts/1.json', vote: -1})
 
   // listVotesFor
 
   // simple usage
-  t.deepEqual(voteSubsets(await libfritter.feed.listVotesFor('https://beakerbrowser.com')), [
+  t.deepEqual(voteSubsets(await fritter.feed.listVotesFor('https://beakerbrowser.com')), [
     { subject: 'https://beakerbrowser.com',
       vote: 1,
       author: false },
@@ -104,7 +104,7 @@ test('votes', async t => {
       author: false }
   ])
   // url is normalized
-  t.deepEqual(voteSubsets(await libfritter.feed.listVotesFor('https://beakerbrowser.com/')), [
+  t.deepEqual(voteSubsets(await fritter.feed.listVotesFor('https://beakerbrowser.com/')), [
     { subject: 'https://beakerbrowser.com',
       vote: 1,
       author: false },
@@ -116,7 +116,7 @@ test('votes', async t => {
       author: false }
   ])
   // simple usage
-  t.deepEqual(voteSubsets(await libfritter.feed.listVotesFor('dat://beakerbrowser.com')), [
+  t.deepEqual(voteSubsets(await fritter.feed.listVotesFor('dat://beakerbrowser.com')), [
     { subject: 'dat://beakerbrowser.com',
       vote: 1,
       author: false },
@@ -128,7 +128,7 @@ test('votes', async t => {
       author: false }
   ])
   // simple usage
-  t.deepEqual(voteSubsets(await libfritter.feed.listVotesFor('dat://bob.com/posts/1.json')), [
+  t.deepEqual(voteSubsets(await fritter.feed.listVotesFor('dat://bob.com/posts/1.json')), [
     { subject: 'dat://bob.com/posts/1.json',
       vote: -1,
       author: false },
@@ -143,28 +143,28 @@ test('votes', async t => {
   // countVotesFor
 
   // simple usage
-  t.deepEqual(await libfritter.feed.countVotesFor('https://beakerbrowser.com'), {
+  t.deepEqual(await fritter.feed.countVotesFor('https://beakerbrowser.com'), {
     up: 3,
     down: 0,
     value: 3,
     upVoters: [alice.url, bob.url, carla.url]
   })
   // url is normalized
-  t.deepEqual(await libfritter.feed.countVotesFor('https://beakerbrowser.com/'), {
+  t.deepEqual(await fritter.feed.countVotesFor('https://beakerbrowser.com/'), {
     up: 3,
     down: 0,
     value: 3,
     upVoters: [alice.url, bob.url, carla.url]
   })
   // simple usage
-  t.deepEqual(await libfritter.feed.countVotesFor('dat://beakerbrowser.com'), {
+  t.deepEqual(await fritter.feed.countVotesFor('dat://beakerbrowser.com'), {
     up: 1,
     down: 1,
     value: 0,
     upVoters: [alice.url]
   })
   // simple usage
-  t.deepEqual(await libfritter.feed.countVotesFor('dat://bob.com/posts/1.json'), {
+  t.deepEqual(await fritter.feed.countVotesFor('dat://bob.com/posts/1.json'), {
     up: 0,
     down: 3,
     value: -3,
@@ -174,27 +174,27 @@ test('votes', async t => {
 
 test('posts', async t => {
   // make some posts
-  var post1Url = await libfritter.feed.post(alice, {text: 'First'})
-  await libfritter.feed.post(bob, {text: 'Second'})
-  await libfritter.feed.post(carla, {text: 'Third'})
-  var reply1Url = await libfritter.feed.post(bob, {
+  var post1Url = await fritter.feed.post(alice, {text: 'First'})
+  await fritter.feed.post(bob, {text: 'Second'})
+  await fritter.feed.post(carla, {text: 'Third'})
+  var reply1Url = await fritter.feed.post(bob, {
     text: 'First reply',
     threadParent: post1Url,
     threadRoot: post1Url
   })
-  await libfritter.feed.post(carla, {
+  await fritter.feed.post(carla, {
     text: 'Second reply',
     threadParent: reply1Url,
     threadRoot: post1Url
   })
-  await libfritter.feed.post(alice, {text: 'Fourth'})
+  await fritter.feed.post(alice, {text: 'Fourth'})
 
   // add some votes
-  await libfritter.feed.vote(bob, {vote: 1, subject: post1Url, subjectType: 'post'})
-  await libfritter.feed.vote(carla, {vote: 1, subject: post1Url, subjectType: 'post'})
+  await fritter.feed.vote(bob, {vote: 1, subject: post1Url, subjectType: 'post'})
+  await fritter.feed.vote(carla, {vote: 1, subject: post1Url, subjectType: 'post'})
 
   // get a post
-  t.deepEqual(postSubset(await libfritter.feed.getPost(post1Url)), {
+  t.deepEqual(postSubset(await fritter.feed.getPost(post1Url)), {
     author: true,
     text: 'First',
     threadParent: undefined,
@@ -221,7 +221,7 @@ test('posts', async t => {
   })
 
   // list posts
-  t.deepEqual(postSubsets(await libfritter.feed.listPosts()), [
+  t.deepEqual(postSubsets(await fritter.feed.listPosts()), [
     { author: false,
       text: 'First',
       threadParent: undefined,
@@ -261,7 +261,7 @@ test('posts', async t => {
   ])
 
   // list posts (no replies)
-  t.deepEqual(postSubsets(await libfritter.feed.listPosts({rootPostsOnly: true})), [
+  t.deepEqual(postSubsets(await fritter.feed.listPosts({rootPostsOnly: true})), [
     {
       author: false,
       text: 'First',
@@ -297,7 +297,7 @@ test('posts', async t => {
   ])
 
   // list posts (authors, votes, and replies)
-  t.deepEqual(postSubsets(await libfritter.feed.listPosts({fetchAuthor: true, rootPostsOnly: true, countVotes: true, fetchReplies: true})), [
+  t.deepEqual(postSubsets(await fritter.feed.listPosts({fetchAuthor: true, rootPostsOnly: true, countVotes: true, fetchReplies: true})), [
     {
       author: true,
       text: 'First',
@@ -350,7 +350,7 @@ test('posts', async t => {
   ])
 
   // list posts (limit, offset, reverse)
-  t.deepEqual(postSubsets(await libfritter.feed.listPosts({rootPostsOnly: true, limit: 1, offset: 1, fetchAuthor: true, countVotes: true, fetchReplies: true})), [
+  t.deepEqual(postSubsets(await fritter.feed.listPosts({rootPostsOnly: true, limit: 1, offset: 1, fetchAuthor: true, countVotes: true, fetchReplies: true})), [
     {
       author: true,
       text: 'Second',
@@ -360,7 +360,7 @@ test('posts', async t => {
       replies: []
     }
   ])
-  t.deepEqual(postSubsets(await libfritter.feed.listPosts({rootPostsOnly: true, reverse: true, limit: 1, offset: 1, fetchAuthor: true, countVotes: true, fetchReplies: true})), [
+  t.deepEqual(postSubsets(await fritter.feed.listPosts({rootPostsOnly: true, reverse: true, limit: 1, offset: 1, fetchAuthor: true, countVotes: true, fetchReplies: true})), [
     {
       author: true,
       text: 'Third',

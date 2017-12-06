@@ -7,8 +7,8 @@ Example setup in Beaker:
 
 ```js
 const LibFritter = require('@beaker/libfritter')
-var libfritter = new LibFritter('fritter')
-libfritter.open().then(/* ready */)
+var fritter = new LibFritter('fritter')
+fritter.open().then(/* ready */)
 ```
 
 API:
@@ -20,41 +20,41 @@ API:
 var libfritter = new LibFritter(nameOrPath, {
   DatArchive: optional, constructor for dats (used in node)
 })
-await libfritter.open() // wait for webdb to initialize
-await libfritter.close()
-await libfritter.addSource(archive)
-await libfritter.removeSource(archive)
+await fritter.open() // wait for webdb to initialize
+await fritter.close()
+await fritter.addSource(archive)
+await fritter.removeSource(archive)
 
 // profile data
 // =
 
-await libfritter.social.getProfile(archive) // => {name:, bio:, avatar:}
-await libfritter.social.setProfile(archive, {name:, bio:})
-await libfritter.social.setAvatar(archive, imgDataBuffer, extension)
+await fritter.social.getProfile(archive) // => {name:, bio:, avatar:}
+await fritter.social.setProfile(archive, {name:, bio:})
+await fritter.social.setAvatar(archive, imgDataBuffer, extension)
 
 // social relationships
 // =
 
-await libfritter.social.follow(archive, targetUser, targetUserName?)
-await libfritter.social.unfollow(archive, targetUser)
+await fritter.social.follow(archive, targetUser, targetUserName?)
+await fritter.social.unfollow(archive, targetUser)
 
-await libfritter.social.listFollowers(archive) // list users in db that follow the user
-await libfritter.social.countFollowers(archive) // count users in db that follow the user
-await libfritter.social.listFriends(archive) // list users in db that mutually follow the user
-await libfritter.social.countFriends(archive) // count users in db that mutually follow the user
+await fritter.social.listFollowers(archive) // list users in db that follow the user
+await fritter.social.countFollowers(archive) // count users in db that follow the user
+await fritter.social.listFriends(archive) // list users in db that mutually follow the user
+await fritter.social.countFriends(archive) // count users in db that mutually follow the user
 
-await libfritter.social.isFollowing(archiveA, archiveB) // => true
-await libfritter.social.isFriendsWith(archiveA, archiveB) // => true
+await fritter.social.isFollowing(archiveA, archiveB) // => true
+await fritter.social.isFriendsWith(archiveA, archiveB) // => true
 
 // posting to the feed
 // =
 
-await libfritter.feed.post(archive, {
+await fritter.feed.post(archive, {
   text: 'Hello, world!',
 })
 
 // posting a reply
-await libfritter.feed.post(archive, {
+await fritter.feed.post(archive, {
   text: 'Hello, world!',
   threadParent: parent.getRecordURL(), // url of message replying to
   threadRoot: root.getRecordURL() // url of topmost ancestor message
@@ -64,7 +64,7 @@ await libfritter.feed.post(archive, {
 // =
 
 // get post records
-await libfritter.feed.listPosts({
+await fritter.feed.listPosts({
   author?: url | DatArchive,
   rootPostsOnly: boolean, remove posts in the feed that are replies
   after: timestamp,
@@ -77,20 +77,20 @@ await libfritter.feed.listPosts({
   countVotes: boolean
 })
 
-await libfritter.feed.countPosts(/* same opts for listPosts */)
-await libfritter.feed.getPost(url)
+await fritter.feed.countPosts(/* same opts for listPosts */)
+await fritter.feed.getPost(url)
 
 // votes
 // =
 
-await libfritter.feed.vote(archive, {
+await fritter.feed.vote(archive, {
   vote: number (-1, 0, or 1),
   subject: string (a url)
 })
 
-await libfritter.feed.listVotesFor(subject)
+await fritter.feed.listVotesFor(subject)
 
 // this returns {up: number, down: number, value: number, upVoters: array of urls, currentUsersVote: number}
-async libfritter.feed.countVotesFor(subject)
+async fritter.feed.countVotesFor(subject)
 ```
 
