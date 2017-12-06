@@ -27,5 +27,13 @@
     "ava": "^0.24.0",
     "node-dat-archive": "^1.6.0",
     "tempy": "^0.2.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beakerbrowser/libfritter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/beakerbrowser/libfritter/issues"
+  },
+  "homepage": "https://github.com/beakerbrowser/libfritter#readme"
 }
