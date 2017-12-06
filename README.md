@@ -7,7 +7,7 @@ Example setup in Beaker:
 
 ```js
 const LibFritter = require('@beaker/libfritter')
-var fritter = new LibFritter('fritter')
+const fritter = new LibFritter('fritter')
 fritter.open().then(/* ready */)
 ```
 
@@ -17,7 +17,7 @@ API:
 // setup / management
 // =
 
-var libfritter = new LibFritter(nameOrPath, {
+const fritter = new LibFritter(nameOrPath, {
   DatArchive: optional, constructor for dats (used in node)
 })
 await fritter.open() // wait for webdb to initialize
