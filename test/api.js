@@ -194,7 +194,7 @@ test('posts', async t => {
   await fritter.feed.vote(carla, {vote: 1, subject: post1Url, subjectType: 'post'})
 
   // get a post
-  t.deepEqual(postSubset(await fritter.feed.getPost(post1Url)), {
+  t.deepEqual(postSubset(await fritter.feed.getThread(post1Url)), {
     author: true,
     text: 'First',
     threadParent: undefined,

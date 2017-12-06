@@ -78,7 +78,7 @@ await fritter.feed.listPosts({
 })
 
 await fritter.feed.countPosts(/* same opts for listPosts */)
-await fritter.feed.getPost(url)
+await fritter.feed.getThread(url)
 
 // votes
 // =
