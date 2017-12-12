@@ -7,9 +7,17 @@ Example setup in Beaker:
 
 ```js
 const LibFritter = require('@beaker/libfritter')
-const fritter = new LibFritter('fritter')
-fritter.open().then(/* ready */)
+const fritter = new LibFritter()
+await fritter.open()
+await fritter.addSource('dat://bob.com')
+await fritter.getProfile('dat://bob.com') // => ...
 ```
+
+Schemas:
+
+ - [Profile](./schemas/profile.json). The schema for user profiles. A very simple "social media" profile: name, bio, profile pic, and a list of followed users.
+ - [Post](./schemas/post.json). The schema for feed posts. Like in Twitter, posts are microblog posts, and can be in reply to other Fritter posts.
+ - [Vote](./schemas/vote.json). The schema for votes. In Fritter, only upvotes are used.
 
 API:
 
@@ -17,13 +25,16 @@ API:
 // setup / management
 // =
 
-const fritter = new LibFritter(nameOrPath, {
-  DatArchive: optional, constructor for dats (used in node)
+const fritter = new LibFritter({
+  mainIndex: optional string, the name/path of the main indexes (default 'fritter')
+  DatArchive: optional function, constructor for dats (used in node)
 })
 await fritter.open() // wait for webdb to initialize
 await fritter.close()
 await fritter.addSource(archive)
 await fritter.removeSource(archive)
+fritter.listSources()
+fritter.isSource(archive)
 
 // profile data
 // =
@@ -65,7 +76,8 @@ await fritter.feed.post(archive, {
 
 // get post records
 await fritter.feed.listPosts({
-  author?: url | DatArchive,
+  author: url | DatArchive,
+  authors: Array<url>,
   rootPostsOnly: boolean, remove posts in the feed that are replies
   after: timestamp,
   before: timestamp,
@@ -73,7 +85,7 @@ await fritter.feed.listPosts({
   limit: number,
   reverse: boolean,
   fetchAuthor: boolean,
-  fetchReplies: boolean,
+  countReplies: boolean,
   countVotes: boolean
 })
 

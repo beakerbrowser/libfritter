@@ -13,8 +13,10 @@ const SCHEMAS = {
 // =
 
 class LibFritter {
-  constructor (name, opts) {
-    this.db = new WebDB(name, opts)
+  constructor (opts = {}) {
+    this.db = new WebDB(opts.mainIndex || 'fritter', {
+      DatArchive: opts.DatArchive
+    })
     defineTables(this.db)
     this.social = new LibFritterSocialAPI(this)
     this.feed = new LibFritterFeedAPI(this)
@@ -42,6 +44,14 @@ class LibFritter {
 
   async removeSource (args) {
     return this.db.removeSource(args)
+  }
+
+  listSources () {
+    return this.db.listSources()
+  }
+
+  isSource (url) {
+    return this.db.isSource(url)
   }
 }
 

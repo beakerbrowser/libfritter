@@ -19,7 +19,7 @@ test.before('archive creation', async t => {
   ])
 
   // setup libfritter
-  fritter = new LibFritter(tempy.directory(), {DatArchive})
+  fritter = new LibFritter({mainIndex: tempy.directory(), DatArchive})
   await fritter.open()
   await fritter.prepareArchive(alice)
   await fritter.prepareArchive(bob)
@@ -193,7 +193,7 @@ test('posts', async t => {
   await fritter.feed.vote(bob, {vote: 1, subject: post1Url, subjectType: 'post'})
   await fritter.feed.vote(carla, {vote: 1, subject: post1Url, subjectType: 'post'})
 
-  // get a post
+  // get a thread
   t.deepEqual(postSubset(await fritter.feed.getThread(post1Url)), {
     author: true,
     text: 'First',
@@ -207,8 +207,29 @@ test('posts', async t => {
         threadParent: post1Url,
         threadRoot: post1Url,
         votes: {up: 0, down: 0, value: 0, upVoters: []},
-        replies: undefined
-      },
+        replies: [
+          {
+            author: true,
+            text: 'Second reply',
+            threadParent: reply1Url,
+            threadRoot: post1Url,
+            votes: {up: 0, down: 0, value: 0, upVoters: []},
+            replies: undefined
+          }
+        ]
+      }
+    ]
+  })
+
+  // get a thread at the middle
+  let threadInTheMiddle = await fritter.feed.getThread(reply1Url)
+  t.deepEqual(postSubset(threadInTheMiddle), {
+    author: true,
+    text: 'First reply',
+    threadParent: post1Url,
+    threadRoot: post1Url,
+    votes: {up: 0, down: 0, value: 0, upVoters: []},
+    replies: [
       {
         author: true,
         text: 'Second reply',
@@ -216,6 +237,32 @@ test('posts', async t => {
         threadRoot: post1Url,
         votes: {up: 0, down: 0, value: 0, upVoters: []},
         replies: undefined
+      }
+    ]
+  })
+  t.deepEqual(postSubset(threadInTheMiddle.parent), {
+    author: true,
+    text: 'First',
+    threadParent: undefined,
+    threadRoot: undefined,
+    votes: {up: 2, down: 0, value: 2, upVoters: [bob.url, carla.url]},
+    replies: [
+      {
+        author: true,
+        text: 'First reply',
+        threadParent: post1Url,
+        threadRoot: post1Url,
+        votes: {up: 0, down: 0, value: 0, upVoters: []},
+        replies: [
+          {
+            author: true,
+            text: 'Second reply',
+            threadParent: reply1Url,
+            threadRoot: post1Url,
+            votes: {up: 0, down: 0, value: 0, upVoters: []},
+            replies: undefined
+          }
+        ]
       }
     ]
   })
@@ -297,31 +344,14 @@ test('posts', async t => {
   ])
 
   // list posts (authors, votes, and replies)
-  t.deepEqual(postSubsets(await fritter.feed.listPosts({fetchAuthor: true, rootPostsOnly: true, countVotes: true, fetchReplies: true})), [
+  t.deepEqual(postSubsets(await fritter.feed.listPosts({fetchAuthor: true, rootPostsOnly: true, countVotes: true, countReplies: true})), [
     {
       author: true,
       text: 'First',
       threadParent: undefined,
       threadRoot: undefined,
       votes: {up: 2, down: 0, value: 2, upVoters: [bob.url, carla.url]},
-      replies: [
-        {
-          author: true,
-          text: 'First reply',
-          threadParent: post1Url,
-          threadRoot: post1Url,
-          votes: {up: 0, down: 0, value: 0, upVoters: []},
-          replies: undefined
-        },
-        {
-          author: true,
-          text: 'Second reply',
-          threadParent: reply1Url,
-          threadRoot: post1Url,
-          votes: {up: 0, down: 0, value: 0, upVoters: []},
-          replies: undefined
-        }
-      ]
+      replies: 2
     },
     {
       author: true,
@@ -329,7 +359,7 @@ test('posts', async t => {
       threadParent: undefined,
       threadRoot: undefined,
       votes: {up: 0, down: 0, value: 0, upVoters: []},
-      replies: []
+      replies: 0
     },
     {
       author: true,
@@ -337,7 +367,7 @@ test('posts', async t => {
       threadParent: undefined,
       threadRoot: undefined,
       votes: {up: 0, down: 0, value: 0, upVoters: []},
-      replies: []
+      replies: 0
     },
     {
       author: true,
@@ -345,29 +375,29 @@ test('posts', async t => {
       threadParent: undefined,
       threadRoot: undefined,
       votes: {up: 0, down: 0, value: 0, upVoters: []},
-      replies: []
+      replies: 0
     }
   ])
 
   // list posts (limit, offset, reverse)
-  t.deepEqual(postSubsets(await fritter.feed.listPosts({rootPostsOnly: true, limit: 1, offset: 1, fetchAuthor: true, countVotes: true, fetchReplies: true})), [
+  t.deepEqual(postSubsets(await fritter.feed.listPosts({rootPostsOnly: true, limit: 1, offset: 1, fetchAuthor: true, countVotes: true, countReplies: true})), [
     {
       author: true,
       text: 'Second',
       threadParent: undefined,
       threadRoot: undefined,
       votes: {up: 0, down: 0, value: 0, upVoters: []},
-      replies: []
+      replies: 0
     }
   ])
-  t.deepEqual(postSubsets(await fritter.feed.listPosts({rootPostsOnly: true, reverse: true, limit: 1, offset: 1, fetchAuthor: true, countVotes: true, fetchReplies: true})), [
+  t.deepEqual(postSubsets(await fritter.feed.listPosts({rootPostsOnly: true, reverse: true, limit: 1, offset: 1, fetchAuthor: true, countVotes: true, countReplies: true})), [
     {
       author: true,
       text: 'Third',
       threadParent: undefined,
       threadRoot: undefined,
       votes: {up: 0, down: 0, value: 0, upVoters: []},
-      replies: []
+      replies: 0
     }
   ])
 })
@@ -408,6 +438,6 @@ function postSubset (p) {
     threadParent: p.threadParent,
     threadRoot: p.threadRoot,
     votes: p.votes,
-    replies: p.replies ? postSubsets(p.replies) : undefined
+    replies: Array.isArray(p.replies) ? postSubsets(p.replies) : p.replies
   }
 }
