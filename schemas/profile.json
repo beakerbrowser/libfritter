@@ -2,16 +2,16 @@
   "$schema": "http://json-schema.org/draft-06/schema#",
   "type": "object",
   "properties": {
-    "name": {"type": "string"},
-    "bio": {"type": "string"},
-    "avatar": {"type": "string"},
+    "name": {"type": ["null", "string"]},
+    "bio": {"type": ["null", "string"]},
+    "avatar": {"type": ["null", "string"]},
     "follows": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "url": {"type": "string", "format": "uri"},
-          "name": {"type": "string"}
+          "name": {"type": ["null", "string"]}
         },
         "required": ["url"]
       }

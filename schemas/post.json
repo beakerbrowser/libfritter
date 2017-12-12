@@ -3,8 +3,8 @@
   "type": "object",
   "properties": {
     "text": {"type": "string"},
-    "threadRoot": {"type": "string", "format": "uri"},
-    "threadParent": {"type": "string", "format": "uri"},
+    "threadRoot": {"type": ["null", "string"], "format": "uri"},
+    "threadParent": {"type": ["null", "string"], "format": "uri"},
     "createdAt": {"type": "number"}
   },
   "required": ["text", "createdAt"]
