@@ -90,7 +90,9 @@ await fritter.feed.listPosts({
 })
 
 await fritter.feed.countPosts(/* same opts for listPosts */)
-await fritter.feed.getThread(url)
+await fritter.feed.getThread(url, {
+  authors: Array<url>
+})
 
 // votes
 // =
