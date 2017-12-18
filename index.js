@@ -29,30 +29,6 @@ class LibFritter {
     await mkdir('posts')
     await mkdir('votes')
   }
-
-  async open () {
-    return this.db.open()
-  }
-
-  async close () {
-    return this.db.close()
-  }
-
-  async addSource (args) {
-    return this.db.addSource(args)
-  }
-
-  async removeSource (args) {
-    return this.db.removeSource(args)
-  }
-
-  listSources () {
-    return this.db.listSources()
-  }
-
-  isSource (url) {
-    return this.db.isSource(url)
-  }
 }
 
 module.exports = LibFritter

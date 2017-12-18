@@ -8,9 +8,9 @@ Example setup in Beaker:
 ```js
 const LibFritter = require('@beaker/libfritter')
 const fritter = new LibFritter()
-await fritter.open()
-await fritter.addSource('dat://bob.com')
-await fritter.getProfile('dat://bob.com') // => ...
+await fritter.db.open()
+await fritter.db.indexArchive('dat://bob.com')
+await fritter.social.getProfile('dat://bob.com') // => ...
 ```
 
 Schemas:
@@ -29,12 +29,8 @@ const fritter = new LibFritter({
   mainIndex: optional string, the name/path of the main indexes (default 'fritter')
   DatArchive: optional function, constructor for dats (used in node)
 })
-await fritter.open() // wait for webdb to initialize
-await fritter.close()
-await fritter.addSource(archive)
-await fritter.removeSource(archive)
-fritter.listSources()
-fritter.isSource(archive)
+fritter.db // the WebDB instance
+await fritter.prepareArchive(archive) // create needed folders for writing to an archive
 
 // profile data
 // =

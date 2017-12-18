@@ -20,11 +20,11 @@ test.before('archive creation', async t => {
 
   // setup libfritter
   fritter = new LibFritter({mainIndex: tempy.directory(), DatArchive})
-  await fritter.open()
+  await fritter.db.open()
   await fritter.prepareArchive(alice)
   await fritter.prepareArchive(bob)
   await fritter.prepareArchive(carla)
-  await fritter.addSource([alice, bob, carla])
+  await fritter.db.indexArchive([alice, bob, carla])
 })
 
 test.after('close db', async t => {
