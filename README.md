@@ -3,8 +3,6 @@
 Data definitions and methods for Fritter, a dat-based Twitter clone.
 Uses [WebDB](https://github.com/beakerbrowser/webdb) to read and write records on the [Dat](https://datproject.org) network.
 
-Example setup in Beaker:
-
 ```js
 const LibFritter = require('@beaker/libfritter')
 const fritter = new LibFritter()
@@ -19,88 +17,318 @@ Schemas:
  - [Post](./schemas/post.json). The schema for feed posts. Like in Twitter, posts are microblog posts, and can be in reply to other Fritter posts.
  - [Vote](./schemas/vote.json). The schema for votes. In Fritter, only upvotes are used.
 
-API:
+## Usage
+
+### Getting started
+
+LibFritter provides a set of methods to be used on top of a [WebDB](https://github.com/beakerbrowser/webdb) instance.
+You will still need to interact with the `.db` instance to drive the index.
+
+Setup will always include the following steps:
 
 ```js
-// setup / management
-// =
+// create the libfritter instance
+const fritter = new LibFritter()
+// open the webdb
+await fritter.db.open()
+```
 
-const fritter = new LibFritter({
-  mainIndex: optional string, the name/path of the main indexes (default 'fritter')
-  DatArchive: optional function, constructor for dats (used in node)
-})
-fritter.db // the WebDB instance
-await fritter.prepareArchive(archive) // create needed folders for writing to an archive
+To add a dat archive to the index, you'll use WebDB's methods:
 
-// profile data
-// =
+```js
+// add a user
+await fritter.db.indexArchive('dat://bob.com')
+// remove a user
+await fritter.db.unindexArchive('dat://bob.com')
+// add an individual file
+await fritter.db.indexFile('dat://bob.com/posts/1.json')
+```
 
-await fritter.social.getProfile(archive) // => {name:, bio:, avatar:}
-await fritter.social.setProfile(archive, {name:, bio:})
-await fritter.social.setAvatar(archive, imgDataBuffer, extension)
+When you create a dat archive for the local user, you'll want to call `prepareArchive()` to setup the folder structure:
 
-// social relationships
-// =
+```js
+await fritter.prepareArchive(alice)
+```
 
-await fritter.social.follow(archive, targetUser, targetUserName?)
-await fritter.social.unfollow(archive, targetUser)
+  - [new LibFritter([opts])](#new-libfritteropts)
+  - [fritter.db](#fritterdb)
+  - [fritter.prepareArchive(archive)](#fritterpreparearchivearchive)
 
-await fritter.social.listFollowers(archive) // list users in db that follow the user
-await fritter.social.countFollowers(archive) // count users in db that follow the user
-await fritter.social.listFriends(archive) // list users in db that mutually follow the user
-await fritter.social.countFriends(archive) // count users in db that mutually follow the user
+### Profiles
 
-await fritter.social.isFollowing(archiveA, archiveB) // => true
-await fritter.social.isFriendsWith(archiveA, archiveB) // => true
+  - [fritter.social.getProfile(archive)](#frittersocialgetprofilearchive)
+  - [fritter.social.setProfile(archive, profile)](#frittersocialsetprofilearchive-profile)
+  - [fritter.social.setAvatar(archive, imgDataBuffer, extension)](#frittersocialsetavatararchive-imgdatabuffer-extension)
 
-// posting to the feed
-// =
+### Social
 
-await fritter.feed.post(archive, {
+  - [fritter.social.follow(archive, targetUser[, targetUserName])](#frittersocialfollowarchive-targetuser-targetusername)
+  - [fritter.social.unfollow(archive, targetUser)](#frittersocialunfollowarchive-targetuser)
+  - [fritter.social.listFollowers(archive)](#frittersociallistfollowersarchive)
+  - [fritter.social.countFollowers(archive)](#frittersocialcountfollowersarchive)
+  - [fritter.social.listFriends(archive)](#frittersociallistfriendsarchive)
+  - [fritter.social.countFriends(archive)](#frittersocialcountfriendsarchive)
+  - [fritter.social.isFollowing(archiveA, archiveB)](#frittersocialisfollowingarchivea-archiveb)
+  - [fritter.social.isFriendsWith(archiveA, archiveB)](#frittersocialisfriendswitharchivea-archiveb)
+
+### Feed
+
+  - [fritter.feed.post(archive, post)](#fritterfeedpostarchive-post)
+  - [fritter.feed.listPosts([opts])](#fritterfeedlistpostsopts)
+  - [fritter.feed.countPosts([opts])](#fritterfeedcountpostsopts)
+  - [fritter.feed.getThread(url[, opts])](#fritterfeedgetthreadurl-opts)
+
+### Like / Unlike
+
+  - [fritter.feed.vote(archive, data)](#fritterfeedvotearchive-data)
+  - [fritter.feed.listVotesFor(subject)](#fritterfeedlistvotesforsubject)
+
+## API
+
+### new LibFritter([opts])
+
+```js
+const fritter = new LibFritter()
+```
+
+ - `opts` Object.
+   - `mainIndex` String. The name (in the browser) or path (in node) of the main indexes. Defaults to `'fritter'`.
+   - `DatArchive` Constructor. The class constructor for dat archive instances. If in node, you should specify [node-dat-archive](https://npm.im/node-dat-archive).
+
+Create a new `LibFritter` instance.
+The `mainIndex` will control where the indexes are stored.
+You can specify different names to run multiple LibFritter instances at once.
+
+### fritter.db
+
+The [WebDB](https://github.com/beakerbrowser/webdb) instance.
+
+### fritter.prepareArchive(archive)
+
+```js
+await fritter.prepareArchive(alice)
+```
+
+ - `archive` DatArchive. The archive to prepare for use in fritter.
+
+Create needed folders for writing to an archive.
+This should be called on any archive that represents the local user.
+
+### fritter.social.getProfile(archive)
+
+```js
+await fritter.social.getProfile(alice) // => {name: 'Alice', bio: 'A cool hacker', avatar: '/avatar.png'}
+```
+
+ - `archive` DatArchive or String. The archive to read.
+
+Get the profile data of the given archive.
+
+### fritter.social.setProfile(archive, profile)
+
+```js
+await fritter.social.setProfile(alice, {name: 'Alice', bio: 'A cool hacker'})
+```
+
+ - `archive` DatArchive or String. The archive to modify.
+ - `profile` Object.
+   - `name` String.
+   - `bio` String.
+
+Set the profile data of the given archive.
+
+### fritter.social.setAvatar(archive, imgDataBuffer, extension)
+
+```js
+await fritter.social.setAvatar(alice, myPngData, 'png')
+```
+
+ - `archive` DatArchive or String. The archive to modify.
+ - `imgDataBuffer` String, ArrayBuffer, or Buffer. The image data to store. If a string, must be base64-encoded.
+ - `extensions` String. The file-extension of the avatar.
+
+Set the avatar image of the given archive.
+
+### fritter.social.follow(archive, targetUser[, targetUserName])
+
+```js
+await fritter.social.follow(alice, bob, 'Bob')
+```
+
+ - `archive` DatArchive or String. The archive to modify.
+ - `targetUser` DatArchive or String. The archive to follow.
+ - `targetUserName` String. The name of the archive being followed.
+
+Add to the follow-list of the given archive.
+
+### fritter.social.unfollow(archive, targetUser)
+
+```js
+await fritter.social.unfollow(alice, bob)
+```
+
+ - `archive` DatArchive or String. The archive to modify.
+ - `targetUser` DatArchive or String. The archive to unfollow.
+
+Remove from the follow-list of the given archive.
+
+### fritter.social.listFollowers(archive)
+
+```js
+await fritter.social.listFollowers(alice)
+```
+
+ - `archive` DatArchive or String. The archive to find followers of.
+
+List users in db that follow the given archive.
+
+### fritter.social.countFollowers(archive)
+
+```js
+await fritter.social.countFollowers(alice)
+```
+
+ - `archive` DatArchive or String. The archive to find followers of.
+
+Count users in db that follow the given archive.
+
+### fritter.social.listFriends(archive)
+
+```js
+await fritter.social.listFriends(alice)
+```
+
+ - `archive` DatArchive or String. The archive to find friends of.
+
+List users in db that mutually follow the given archive.
+
+### fritter.social.countFriends(archive)
+
+```js
+await fritter.social.countFriends(alice)
+```
+
+ - `archive` DatArchive or String. The archive to find friends of.
+
+Count users in db that mutually follow the given archive.
+
+
+### fritter.social.isFollowing(archiveA, archiveB)
+
+```js
+await fritter.social.isFollowing(alice, bob) // => true
+```
+
+ - `archiveA` DatArchive or String. The archive to test.
+ - `archiveB` DatArchive or String. The follow target.
+
+Test if `archiveA` is following `archiveB`.
+
+### fritter.social.isFriendsWith(archiveA, archiveB)
+
+```js
+await fritter.social.isFriendsWith(alice, bob) // => true
+```
+ - `archiveA` DatArchive or String.
+ - `archiveB` DatArchive or String.
+
+Test if `archiveA` and `archiveB` are mutually following each other.
+
+### fritter.feed.post(archive, post)
+
+```js
+// posting a new thread
+await fritter.feed.post(alice, {
   text: 'Hello, world!',
 })
 
 // posting a reply
-await fritter.feed.post(archive, {
+await fritter.feed.post(alice, {
   text: 'Hello, world!',
   threadParent: parent.getRecordURL(), // url of message replying to
   threadRoot: root.getRecordURL() // url of topmost ancestor message
 })
-
-// reading the feed
-// =
-
-// get post records
-await fritter.feed.listPosts({
-  author: url | DatArchive,
-  authors: Array<url>,
-  rootPostsOnly: boolean, remove posts in the feed that are replies
-  after: timestamp,
-  before: timestamp,
-  offset: number,
-  limit: number,
-  reverse: boolean,
-  fetchAuthor: boolean,
-  countReplies: boolean,
-  countVotes: boolean
-})
-
-await fritter.feed.countPosts(/* same opts for listPosts */)
-await fritter.feed.getThread(url, {
-  authors: Array<url>
-})
-
-// votes
-// =
-
-await fritter.feed.vote(archive, {
-  vote: number (-1, 0, or 1),
-  subject: string (a url)
-})
-
-await fritter.feed.listVotesFor(subject)
-
-// this returns {up: number, down: number, value: number, upVoters: array of urls, currentUsersVote: number}
-async fritter.feed.countVotesFor(subject)
 ```
 
+ - `archive` DatArchive or String. The archive to modify.
+ - `post` Object.
+   - `text` String. The content of the post.
+   - `threadParent` String. The URL of the parent post in the thread. Only needed in a reply; must also include `threadRoot`.
+   - `threadRoot` String. The URL of the root post in the thread. Only needed in a reply; must also include `threadParent`.
+
+Post a new message to the feed.
+
+### fritter.feed.listPosts([opts])
+
+```js
+await fritter.feed.listPosts({limit: 30})
+```
+
+ - `opts` Object.
+   - `author` String | DatArchive. Single-author filter.
+   - `authors` Array<String>. Multi-author filter.
+   - `rootPostsOnly` Boolean. Remove posts in the feed that are replies
+   - `after` Number. Filter out posts created before the given timestamp.
+   - `before` Number. Filter out posts created after the given timestamp.
+   - `limit` Number. Add a limit to the number of results given.
+   - `offset` Number. Add an offset to the results given. Useful in pagination.
+   - `reverse` Boolean. Reverse the order of the output.
+   - `fetchAuthor` Boolean. Populate the `.author` attribute of the result objects with the author's profile record.
+   - `countReplies` Boolean. Populate the `.replies` attribute of the result objects with number of replies to the post.
+   - `countVotes` Boolean. Populate the `.votes` attribute of the result objects with the results of `countVotesFor`.
+
+Fetch a list of posts in the feed index.
+
+### fritter.feed.countPosts([opts])
+
+```js
+await fritter.feed.countPosts({author: alice})
+```
+
+ - `opts` Object.
+   - `author` String | DatArchive. Single-author filter.
+   - `authors` Array<String>. Multi-author filter.
+   - `rootPostsOnly` Boolean. Remove posts in the feed that are replies
+   - `after` Number. Filter out posts created before the given timestamp.
+   - `before` Number. Filter out posts created after the given timestamp.
+   - `limit` Number. Add a limit to the number of results given.
+   - `offset` Number. Add an offset to the results given. Useful in pagination.
+
+Count posts in the feed index.
+
+### fritter.feed.getThread(url[, opts])
+
+```js
+await fritter.feed.getThread('dat://alice.com/posts/1.json')
+```
+
+ - `url` String. The URL of the thread.
+ - `opts` Object.
+   - `authors` Array<String>. Filter the posts in the thread down to those published by the given list of archive urls.
+
+Fetch a discussion thread, including all replies.
+
+### fritter.feed.vote(archive, data)
+
+```js
+await fritter.feed.vote(alice, {
+  vote: 1,
+  subject: 'dat://bob.com/posts/1.json'
+})
+```
+
+ - `archive` DatArchive or String. The archive to modify.
+ - `data` Object.
+   - `vote` Number. The vote value. Must be -1 (dislike), 0 (no opinion), or 1 (like).
+   - `subject` String. The url of the item being voted on.
+
+Publish a vote on the given subject.
+
+### fritter.feed.listVotesFor(subject)
+
+```js
+await fritter.feed.listVotesFor('dat://bob.com/posts/1.json')
+
+  - `subject` String. The url of the item.
+
+Returns a vote tabulation of the given subject.
