@@ -3,6 +3,8 @@
 Data definitions and methods for Fritter, a dat-based Twitter clone.
 Uses [WebDB](https://github.com/beakerbrowser/webdb) to read and write records on the [Dat](https://datproject.org) network.
 
+Visit the [Fritter app](https://github.com/beakerbrowser/fritter) to see this library in use.
+
 ```js
 const LibFritter = require('@beaker/libfritter')
 const fritter = new LibFritter()
@@ -22,7 +24,6 @@ Schemas:
 ### Getting started
 
 LibFritter provides a set of methods to be used on top of a [WebDB](https://github.com/beakerbrowser/webdb) instance.
-You will still need to interact with the `.db` instance to drive the index.
 
 Setup will always include the following steps:
 
@@ -33,13 +34,20 @@ const fritter = new LibFritter()
 await fritter.db.open()
 ```
 
-To add a dat archive to the index, you'll use WebDB's methods:
+WebDB maintains an index which will determine who shows up in the feed, and whether any read method works for a given archive.
+(For instance, you can't call `getProfile()` on an archive that hasn't been indexed.)
+You can manage the index's membership using WebDB's methods:
 
 ```js
 // add a user
 await fritter.db.indexArchive('dat://bob.com')
 // remove a user
 await fritter.db.unindexArchive('dat://bob.com')
+```
+
+You can also add individual files to the index, which is helpful when the user navigates to a thread:
+
+```js
 // add an individual file
 await fritter.db.indexFile('dat://bob.com/posts/1.json')
 ```
@@ -47,6 +55,7 @@ await fritter.db.indexFile('dat://bob.com/posts/1.json')
 When you create a dat archive for the local user, you'll want to call `prepareArchive()` to setup the folder structure:
 
 ```js
+var alice = DatArchive.create({title: 'Alice', description: 'My Fritter profile'})
 await fritter.prepareArchive(alice)
 ```
 
@@ -56,11 +65,37 @@ await fritter.prepareArchive(alice)
 
 ### Profiles
 
+User profiles include a `name`, `bio`, and an avatar image.
+
+```js
+await fritter.social.setProfile(alice, {
+  name: 'Alice',
+  bio: 'A cool hacker'
+})
+
+await fritter.social.setAvatar(alice, 'iVBORw...rkJggg==', 'png')
+
+await fritter.social.getProfile(alice) /* => {
+  name: 'Alice',
+  bio: 'A cool hacker',
+  avatar: '/avatar.png'
+} */
+```
+
   - [fritter.social.getProfile(archive)](#frittersocialgetprofilearchive)
   - [fritter.social.setProfile(archive, profile)](#frittersocialsetprofilearchive-profile)
   - [fritter.social.setAvatar(archive, imgDataBuffer, extension)](#frittersocialsetavatararchive-imgdatabuffer-extension)
 
 ### Social
+
+Every user maintains a public list of other users they follow.
+You can modify and examine the social graph using these methods.
+
+```js
+await fritter.social.follow(alice, bob)
+await fritter.social.follow(alice, 'dat://bob.com') // (urls work too)
+await fritter.social.listFollowers(bob) // => [{name: 'Alice', bio: 'A cool hacker', ...}]
+```
 
   - [fritter.social.follow(archive, targetUser[, targetUserName])](#frittersocialfollowarchive-targetuser-targetusername)
   - [fritter.social.unfollow(archive, targetUser)](#frittersocialunfollowarchive-targetuser)
@@ -73,12 +108,54 @@ await fritter.prepareArchive(alice)
 
 ### Feed
 
+The feed contains simple text-based posts.
+
+```js
+// posting a new thread
+await fritter.feed.post(alice, {
+  text: 'Hello, world!',
+})
+
+// posting a reply
+await fritter.feed.post(alice, {
+  text: 'Hello, world!',
+  threadParent: parent.getRecordURL(), // url of message replying to
+  threadRoot: root.getRecordURL() // url of topmost ancestor message
+})
+```
+
+The list method will show any indexed posts.
+
+```js
+await fritter.feed.listPosts({
+  fetchAuthor: true,
+  countVotes: true,
+  reverse: true,
+  rootPostsOnly: true,
+  countReplies: true
+})
+```
+
+You can view the posts of an individual user by adding the `author` filter, and also narrow down the feed to only include the followed users using the `authors` filter.
+
   - [fritter.feed.post(archive, post)](#fritterfeedpostarchive-post)
   - [fritter.feed.listPosts([opts])](#fritterfeedlistpostsopts)
   - [fritter.feed.countPosts([opts])](#fritterfeedcountpostsopts)
   - [fritter.feed.getThread(url[, opts])](#fritterfeedgetthreadurl-opts)
 
 ### Like / Unlike
+
+Users can like posts using the votes.
+
+```js
+await fritter.feed.vote(alice, {vote: 1, subject: 'dat://bob.com/posts/1.json'})
+await fritter.feed.listVotesFor('dat://bob.com/posts/1.json') /* => {
+  up: 1,
+  down: 0,
+  value: 1,
+  upVoters: ['dat://alice.com']
+}
+```
 
   - [fritter.feed.vote(archive, data)](#fritterfeedvotearchive-data)
   - [fritter.feed.listVotesFor(subject)](#fritterfeedlistvotesforsubject)
