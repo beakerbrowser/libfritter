@@ -1,6 +1,6 @@
 {
   "name": "@beaker/libfritter",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Data definitions and methods for Fritter",
   "main": "index.js",
   "directories": {
