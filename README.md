@@ -13,6 +13,7 @@
   - [API](#api)
     - [new LibFritter([opts])](#new-libfritteropts)
     - [fritter.db](#fritterdb)
+    - [fritter.setUser(archive)](#frittersetuserarchive)
     - [fritter.prepareArchive(archive)](#fritterpreparearchivearchive)
     - [fritter.social.getProfile(archive)](#frittersocialgetprofilearchive)
     - [fritter.social.setProfile(archive, profile)](#frittersocialsetprofilearchive-profile)
@@ -98,6 +99,7 @@ await fritter.prepareArchive(alice)
 
   - [new LibFritter([opts])](#new-libfritteropts)
   - [fritter.db](#fritterdb)
+  - [fritter.setUser(archive)](#frittersetuserarchive)
   - [fritter.prepareArchive(archive)](#fritterpreparearchivearchive)
 
 ### Profiles
@@ -236,6 +238,16 @@ You can specify different names to run multiple LibFritter instances at once.
 ### fritter.db
 
 The [WebDB](https://github.com/beakerbrowser/webdb) instance.
+
+### fritter.setUser(archive)
+
+```js
+fritter.setUser(alice)
+```
+
+ - `archive` DatArchive. The archive which represents the local user.
+
+Sets the local user. Used in notifications to know which posts should be indexed. 
 
 ### fritter.prepareArchive(archive)
 
