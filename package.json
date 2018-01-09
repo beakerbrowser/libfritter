@@ -20,7 +20,6 @@
   "dependencies": {
     "@beaker/webdb": "^4.1.0",
     "monotonic-timestamp-base36": "^1.0.0",
-    "normalize-url": "^2.0.1",
     "slugify-url": "^1.2.0"
   },
   "devDependencies": {
