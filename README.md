@@ -215,6 +215,7 @@ await fritter.notifications.listNotifications() /* => [
 ```
 
  - [fritter.notifications.listNotifications(opts)](#fritternotificationslistnotificationsopts)
+ - [fritter.notifications.countNotifications([opts])](#fritternotificationscountnotificationsopts)
 
 ## API
 
