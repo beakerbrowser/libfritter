@@ -2,7 +2,8 @@ const WebDB = require('@beaker/webdb')
 const assert = require('assert')
 const LibFritterSocialAPI = require('./lib/social')
 const LibFritterFeedAPI = require('./lib/feed')
-const {normalizeUrl} = require('./lib/util')
+const LibFritterNotificationsAPI = require('./lib/notifications')
+const {normalizeUrl, toArchiveOrigin} = require('./lib/util')
 
 // exported API
 // =
@@ -13,8 +14,15 @@ class LibFritter {
       DatArchive: opts.DatArchive
     })
     defineTables(this.db)
+    setHooks(this)
+    this.userUrl = ''
     this.social = new LibFritterSocialAPI(this)
     this.feed = new LibFritterFeedAPI(this)
+    this.notifications = new LibFritterNotificationsAPI(this)
+  }
+
+  setUser (user) {
+    this.userUrl = toArchiveOrigin(user)
   }
 
   async prepareArchive (archive) {
@@ -88,6 +96,69 @@ function defineTables (db) {
     preprocess (record) {
       record.subject = normalizeUrl(record.subject)
     }
+  })
+
+  db.define('notifications', {
+    helperTable: true,
+    index: ['createdAt'],
+    preprocess (record) {
+      record.createdAt = record.createdAt || Date.now()
+    }
+  })
+}
+
+function setHooks (inst) {
+  const db = inst.db
+  const consoleDebug = console.debug || console.log
+  db.on('open-failed', err => console.error('Database failed to open.', err))
+  db.on('indexes-reset', () => consoleDebug('Rebuilding indexes.'))
+
+  function isAReplyToUser (record) {
+    if (record.threadRoot && record.threadRoot.startsWith(inst.userUrl)) return true
+    if (record.threadParent && record.threadParent.startsWith(inst.userUrl)) return true
+    return false
+  }
+
+  function isALikeOnUserPost (record) {
+    return record.subject.startsWith(inst.userUrl + '/posts/')
+  }
+
+  async function isNotificationIndexed (url) {
+    let record = await db.notifications.get(url)
+    return !!record
+  }
+
+  db.on('open', () => {
+    consoleDebug('Database is opened.')
+
+    // reply notifications
+    db.posts.on('put-record', async ({record, url, origin}) => {
+      if (origin === inst.userUrl) return // dont index the user's replies
+      if (isAReplyToUser(record) === false) return // only index replies to the user
+      if (await isNotificationIndexed(url)) return // don't index if already indexed
+      await db.notifications.put(url, {type: 'reply', url, createdAt: record.createdAt})
+    })
+    db.posts.on('del-record', async ({url}) => {
+      if (await isNotificationIndexed(url)) {
+        await db.notifications.delete(url)
+      }
+    })
+
+    // like notifications
+    db.votes.on('put-record', async ({record, url, origin}) => {
+      if (origin === inst.userUrl) return // dont index the user's votes
+      if (isALikeOnUserPost(record) === false) return // only index votes on the user's posts
+      if (record.vote === 1) {
+        await db.notifications.put(url, {type: 'vote', vote: 1, subject: record.subject, origin, createdAt: record.createdAt})
+      } else {
+        await db.notifications.delete(url)
+      }
+    })
+    db.votes.on('del-record', async ({url}) => {
+      if (isNotificationIndexed(url)) {
+        await db.notifications.delete(url)
+      }
+    })
   })
 }
 

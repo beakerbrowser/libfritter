@@ -1,3 +1,41 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [libfritter](#libfritter)
+  - [Usage](#usage)
+    - [Getting started](#getting-started)
+    - [Profiles](#profiles)
+    - [Social](#social)
+    - [Feed](#feed)
+    - [Like / Unlike](#like--unlike)
+    - [Notifications](#notifications)
+  - [API](#api)
+    - [new LibFritter([opts])](#new-libfritteropts)
+    - [fritter.db](#fritterdb)
+    - [fritter.prepareArchive(archive)](#fritterpreparearchivearchive)
+    - [fritter.social.getProfile(archive)](#frittersocialgetprofilearchive)
+    - [fritter.social.setProfile(archive, profile)](#frittersocialsetprofilearchive-profile)
+    - [fritter.social.setAvatar(archive, imgDataBuffer, extension)](#frittersocialsetavatararchive-imgdatabuffer-extension)
+    - [fritter.social.follow(archive, targetUser[, targetUserName])](#frittersocialfollowarchive-targetuser-targetusername)
+    - [fritter.social.unfollow(archive, targetUser)](#frittersocialunfollowarchive-targetuser)
+    - [fritter.social.listFollowers(archive)](#frittersociallistfollowersarchive)
+    - [fritter.social.countFollowers(archive)](#frittersocialcountfollowersarchive)
+    - [fritter.social.listFriends(archive)](#frittersociallistfriendsarchive)
+    - [fritter.social.countFriends(archive)](#frittersocialcountfriendsarchive)
+    - [fritter.social.isFollowing(archiveA, archiveB)](#frittersocialisfollowingarchivea-archiveb)
+    - [fritter.social.isFriendsWith(archiveA, archiveB)](#frittersocialisfriendswitharchivea-archiveb)
+    - [fritter.feed.post(archive, post)](#fritterfeedpostarchive-post)
+    - [fritter.feed.listPosts([opts])](#fritterfeedlistpostsopts)
+    - [fritter.feed.countPosts([opts])](#fritterfeedcountpostsopts)
+    - [fritter.feed.getThread(url[, opts])](#fritterfeedgetthreadurl-opts)
+    - [fritter.feed.vote(archive, data)](#fritterfeedvotearchive-data)
+    - [fritter.feed.listVotesFor(subject)](#fritterfeedlistvotesforsubject)
+    - [fritter.notifications.listNotifications([opts])](#fritternotificationslistnotificationsopts)
+    - [fritter.notifications.countNotifications([opts])](#fritternotificationscountnotificationsopts)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # libfritter
 
 Data definitions and methods for Fritter, a dat-based Twitter clone.
@@ -159,6 +197,25 @@ await fritter.feed.listVotesFor('dat://bob.com/posts/1.json') /* => {
 
   - [fritter.feed.vote(archive, data)](#fritterfeedvotearchive-data)
   - [fritter.feed.listVotesFor(subject)](#fritterfeedlistvotesforsubject)
+
+### Notifications
+
+You can view recent notifications (likes and replies on your posts) using the notifications api.
+
+```js
+await fritter.notifications.listNotifications() /* => [
+  { type: 'reply',
+    url: 'dat://alice.com/posts/0jc7w07be.json',
+    createdAt: 1515517526289 },
+  { type: 'vote',
+    vote: 1,
+    subject: 'dat://alice.com/posts/0jc7w079o.json',
+    origin: 'dat://bob.com',
+    createdAt: 1515517526308 }
+]*/
+```
+
+ - [fritter.notifications.listNotifications(opts)](#fritternotificationslistnotificationsopts)
 
 ## API
 
@@ -405,7 +462,39 @@ Publish a vote on the given subject.
 
 ```js
 await fritter.feed.listVotesFor('dat://bob.com/posts/1.json')
+```
 
   - `subject` String. The url of the item.
 
 Returns a vote tabulation of the given subject.
+
+### fritter.notifications.listNotifications([opts])
+
+```js
+await fritter.notifications.listNotifications({limit: 30})
+```
+
+ - `opts` Object.
+   - `after` Number. Filter out notifications created before the given timestamp.
+   - `before` Number. Filter out notifications created after the given timestamp.
+   - `limit` Number. Add a limit to the number of results given.
+   - `offset` Number. Add an offset to the results given. Useful in pagination.
+   - `reverse` Boolean. Reverse the order of the output.
+   - `fetchAuthor` Boolean. Populate the `.author` attribute of the result objects with the author's profile record.
+   - `fetchPost` Boolean. Populate the `.post` attribute of the result objects with the post that's the subject of the notification.
+
+Fetch a list of events in the notifications index.
+
+### fritter.notifications.countNotifications([opts])
+
+```js
+await fritter.notifications.countNotifications()
+```
+
+ - `opts` Object.
+   - `after` Number. Filter out notifications created before the given timestamp.
+   - `before` Number. Filter out notifications created after the given timestamp.
+   - `limit` Number. Add a limit to the number of results given.
+   - `offset` Number. Add an offset to the results given. Useful in pagination.
+
+Fetch a count of events in the notifications index.

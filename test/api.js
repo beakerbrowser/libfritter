@@ -20,6 +20,7 @@ test.before('archive creation', async t => {
 
   // setup libfritter
   fritter = new LibFritter({mainIndex: tempy.directory(), DatArchive})
+  fritter.setUser(alice)
   await fritter.db.open()
   await fritter.prepareArchive(alice)
   await fritter.prepareArchive(bob)
@@ -400,6 +401,39 @@ test('posts', async t => {
       replies: 0
     }
   ])
+})
+
+test('notifications', async (t) => {
+  var notifications = await fritter.notifications.listNotifications({fetchPost: true, fetchAuthor: true})
+
+  t.is(notifications.length, 4)
+  t.is(notifications[0].type, 'reply')
+  t.truthy(notifications[0].url.startsWith(bob.url))
+  t.is(notifications[0].author.getRecordOrigin(), bob.url)
+  t.is(notifications[0].post.author.getRecordOrigin(), bob.url)
+  t.is(notifications[0].post.text, 'First reply')
+  t.is(notifications[1].type, 'reply')
+  t.truthy(notifications[1].url.startsWith(carla.url))
+  t.is(notifications[1].author.getRecordOrigin(), carla.url)
+  t.is(notifications[1].post.author.getRecordOrigin(), carla.url)
+  t.is(notifications[1].post.text, 'Second reply')
+  t.is(notifications[2].type, 'vote')
+  t.is(notifications[2].origin, bob.url)
+  t.truthy(notifications[2].subject.startsWith(alice.url))
+  t.is(notifications[2].author.getRecordOrigin(), bob.url)
+  t.is(notifications[3].type, 'vote')
+  t.is(notifications[3].origin, carla.url)
+  t.truthy(notifications[3].subject.startsWith(alice.url))
+  t.is(notifications[3].author.getRecordOrigin(), carla.url)
+
+  var notifications = await fritter.notifications.listNotifications({offset: 1, limit: 2, reverse: true})
+
+  t.is(notifications.length, 2)
+  t.is(notifications[1].type, 'reply')
+  t.truthy(notifications[1].url.startsWith(carla.url))
+  t.is(notifications[0].type, 'vote')
+  t.is(notifications[0].origin, bob.url)
+  t.truthy(notifications[0].subject.startsWith(alice.url))
 })
 
 function profileSubset (p) {
