@@ -38,10 +38,9 @@
 
 # libfritter
 
-Data definitions and methods for Fritter, a dat-based Twitter clone.
-Uses [WebDB](https://github.com/beakerbrowser/webdb) to read and write records on the [Dat](https://datproject.org) network.
+Data definitions and methods for Fritter, a Twitter clone built on top of [Dat](https://github.com/datproject/dat). Uses [WebDB](https://github.com/beakerbrowser/webdb) to read and write records on the Dat network.
 
-Visit the [Fritter app](https://github.com/beakerbrowser/fritter) to see this library in use.
+See the [Fritter app](https://github.com/beakerbrowser/fritter) to see this library in use.
 
 ```js
 const LibFritter = require('@beaker/libfritter')
