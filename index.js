@@ -60,7 +60,7 @@ function defineTables (db) {
     },
     preprocess (record) {
       record.follows = record.follows || []
-      record.followUrls = record.follows.map(f => f.url)
+      record.followUrls = record.follows.map(f => toArchiveOrigin(f.url))
     },
     serialize (record) {
       return {
