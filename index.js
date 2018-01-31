@@ -168,7 +168,7 @@ function setHooks (inst) {
 
     // mention notifications
     db.posts.on('put-record', async ({record, url, origin}) => {
-      //if (origin === inst.userUrl) return // dont index the user's self-mentions
+      if (origin === inst.userUrl) return // dont index the user's self-mentions
       if (isAMentionOfUser(record) === false) return
       if (await isNotificationIndexed(url)) return // don't index if already indexed
       await db.notifications.put(url, {type: 'mention', url, createdAt: record.createdAt})
