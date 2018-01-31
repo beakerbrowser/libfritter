@@ -178,6 +178,7 @@ test('posts', async t => {
   var post1Url = await fritter.feed.post(alice, {text: 'First'})
   await fritter.feed.post(bob, {text: 'Second'})
   await fritter.feed.post(carla, {text: 'Third'})
+  await fritter.feed.post(alice, {text: '@Alice', mentions: [{ name: 'Alice', url: alice.url }]})
   var reply1Url = await fritter.feed.post(bob, {
     text: 'First reply',
     threadParent: post1Url,
@@ -289,6 +290,12 @@ test('posts', async t => {
       votes: undefined,
       replies: undefined },
     { author: false,
+      text: '@Alice',
+      threadParent: undefined,
+      threadRoot: undefined,
+      votes: undefined,
+      replies: undefined },
+    { author: false,
       text: 'First reply',
       threadParent: post1Url,
       threadRoot: post1Url,
@@ -336,6 +343,14 @@ test('posts', async t => {
     },
     {
       author: false,
+      text: '@Alice',
+      threadParent: undefined,
+      threadRoot: undefined,
+      votes: undefined,
+      replies: undefined
+    },
+    {
+      author: false,
       text: 'Fourth',
       threadParent: undefined,
       threadRoot: undefined,
@@ -372,6 +387,14 @@ test('posts', async t => {
     },
     {
       author: true,
+      text: '@Alice',
+      threadParent: undefined,
+      threadRoot: undefined,
+      votes: {up: 0, down: 0, value: 0, upVoters: []},
+      replies: 0
+    },
+    {
+      author: true,
       text: 'Fourth',
       threadParent: undefined,
       threadRoot: undefined,
@@ -394,7 +417,7 @@ test('posts', async t => {
   t.deepEqual(postSubsets(await fritter.feed.listPosts({rootPostsOnly: true, reverse: true, limit: 1, offset: 1, fetchAuthor: true, countVotes: true, countReplies: true})), [
     {
       author: true,
-      text: 'Third',
+      text: '@Alice',
       threadParent: undefined,
       threadRoot: undefined,
       votes: {up: 0, down: 0, value: 0, upVoters: []},
