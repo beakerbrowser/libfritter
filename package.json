@@ -18,7 +18,7 @@
   "author": "Paul Frazee <pfrazee@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@beaker/webdb": "^4.1.0",
+    "@beaker/webdb": "^4.1.1",
     "monotonic-timestamp-base36": "^1.0.0",
     "slugify-url": "^1.2.0"
   },
