@@ -178,6 +178,7 @@ test('posts', async t => {
   var post1Url = await fritter.feed.post(alice, {text: 'First'})
   await fritter.feed.post(bob, {text: 'Second'})
   await fritter.feed.post(carla, {text: 'Third'})
+  await fritter.feed.post(bob, {text: '@Alice', mentions: [{ name: 'Alice', url: alice.url }]})
   var reply1Url = await fritter.feed.post(bob, {
     text: 'First reply',
     threadParent: post1Url,
@@ -289,6 +290,12 @@ test('posts', async t => {
       votes: undefined,
       replies: undefined },
     { author: false,
+      text: '@Alice',
+      threadParent: undefined,
+      threadRoot: undefined,
+      votes: undefined,
+      replies: undefined },
+    { author: false,
       text: 'First reply',
       threadParent: post1Url,
       threadRoot: post1Url,
@@ -336,6 +343,14 @@ test('posts', async t => {
     },
     {
       author: false,
+      text: '@Alice',
+      threadParent: undefined,
+      threadRoot: undefined,
+      votes: undefined,
+      replies: undefined
+    },
+    {
+      author: false,
       text: 'Fourth',
       threadParent: undefined,
       threadRoot: undefined,
@@ -372,6 +387,14 @@ test('posts', async t => {
     },
     {
       author: true,
+      text: '@Alice',
+      threadParent: undefined,
+      threadRoot: undefined,
+      votes: {up: 0, down: 0, value: 0, upVoters: []},
+      replies: 0
+    },
+    {
+      author: true,
       text: 'Fourth',
       threadParent: undefined,
       threadRoot: undefined,
@@ -394,7 +417,7 @@ test('posts', async t => {
   t.deepEqual(postSubsets(await fritter.feed.listPosts({rootPostsOnly: true, reverse: true, limit: 1, offset: 1, fetchAuthor: true, countVotes: true, countReplies: true})), [
     {
       author: true,
-      text: 'Third',
+      text: '@Alice',
       threadParent: undefined,
       threadRoot: undefined,
       votes: {up: 0, down: 0, value: 0, upVoters: []},
@@ -406,25 +429,28 @@ test('posts', async t => {
 test('notifications', async (t) => {
   var notifications = await fritter.notifications.listNotifications({fetchPost: true, fetchAuthor: true})
 
-  t.is(notifications.length, 4)
-  t.is(notifications[0].type, 'reply')
-  t.truthy(notifications[0].url.startsWith(bob.url))
+  t.is(notifications.length, 5)
+  t.is(notifications[0].type, 'mention')
+  t.is(notifications[0].post.mentions[0].url, alice.url)
   t.is(notifications[0].author.getRecordOrigin(), bob.url)
-  t.is(notifications[0].post.author.getRecordOrigin(), bob.url)
-  t.is(notifications[0].post.text, 'First reply')
   t.is(notifications[1].type, 'reply')
-  t.truthy(notifications[1].url.startsWith(carla.url))
-  t.is(notifications[1].author.getRecordOrigin(), carla.url)
-  t.is(notifications[1].post.author.getRecordOrigin(), carla.url)
-  t.is(notifications[1].post.text, 'Second reply')
-  t.is(notifications[2].type, 'vote')
-  t.is(notifications[2].origin, bob.url)
-  t.truthy(notifications[2].subject.startsWith(alice.url))
-  t.is(notifications[2].author.getRecordOrigin(), bob.url)
+  t.truthy(notifications[1].url.startsWith(bob.url))
+  t.is(notifications[1].author.getRecordOrigin(), bob.url)
+  t.is(notifications[1].post.author.getRecordOrigin(), bob.url)
+  t.is(notifications[1].post.text, 'First reply')
+  t.is(notifications[2].type, 'reply')
+  t.truthy(notifications[2].url.startsWith(carla.url))
+  t.is(notifications[2].author.getRecordOrigin(), carla.url)
+  t.is(notifications[2].post.author.getRecordOrigin(), carla.url)
+  t.is(notifications[2].post.text, 'Second reply')
   t.is(notifications[3].type, 'vote')
-  t.is(notifications[3].origin, carla.url)
+  t.is(notifications[3].origin, bob.url)
   t.truthy(notifications[3].subject.startsWith(alice.url))
-  t.is(notifications[3].author.getRecordOrigin(), carla.url)
+  t.is(notifications[3].author.getRecordOrigin(), bob.url)
+  t.is(notifications[4].type, 'vote')
+  t.is(notifications[4].origin, carla.url)
+  t.truthy(notifications[4].subject.startsWith(alice.url))
+  t.is(notifications[4].author.getRecordOrigin(), carla.url)
 
   var notifications = await fritter.notifications.listNotifications({offset: 1, limit: 2, reverse: true})
 

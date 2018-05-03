@@ -123,6 +123,12 @@ function setHooks (inst) {
     return record.subject.startsWith(inst.userUrl + '/posts/')
   }
 
+  function isAMentionOfUser (record) {
+    return record.hasOwnProperty('mentions') && record.mentions.find(x => {
+      return x.url == inst.userUrl
+    })
+  }
+
   async function isNotificationIndexed (url) {
     let record = await db.notifications.get(url)
     return !!record
@@ -159,7 +165,13 @@ function setHooks (inst) {
         await db.notifications.delete(url)
       }
     })
+
+    // mention notifications
+    db.posts.on('put-record', async ({record, url, origin}) => {
+      if (origin === inst.userUrl) return // dont index the user's self-mentions
+      if (isAMentionOfUser(record) === false) return
+      if (await isNotificationIndexed(url)) return // don't index if already indexed
+      await db.notifications.put(url, {type: 'mention', url, createdAt: record.createdAt})
+    })
   })
 }
-
-
