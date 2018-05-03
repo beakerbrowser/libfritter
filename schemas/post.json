@@ -5,7 +5,18 @@
     "text": {"type": "string"},
     "threadRoot": {"type": ["null", "string"], "format": "uri"},
     "threadParent": {"type": ["null", "string"], "format": "uri"},
-    "createdAt": {"type": "number"}
+    "createdAt": {"type": "number"},
+    "mentions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {"type": "string", "format": "uri"},
+          "name": {"type": ["null", "string"]}
+        },
+        "required": ["url"]
+      }
+    }
   },
   "required": ["text", "createdAt"]
 }

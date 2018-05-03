@@ -201,10 +201,13 @@ await fritter.feed.listVotesFor('dat://bob.com/posts/1.json') /* => {
 
 ### Notifications
 
-You can view recent notifications (likes and replies on your posts) using the notifications api.
+You can view recent notifications (mentions, likes and replies on your posts) using the notifications api.
 
 ```js
 await fritter.notifications.listNotifications() /* => [
+  { type: 'mention',
+    url: 'dat://bob.com/posts/0jc7w0d5cd.json',
+    createdAt: 15155171572345 },
   { type: 'reply',
     url: 'dat://alice.com/posts/0jc7w07be.json',
     createdAt: 1515517526289 },
@@ -401,6 +404,7 @@ await fritter.feed.post(alice, {
    - `text` String. The content of the post.
    - `threadParent` String. The URL of the parent post in the thread. Only needed in a reply; must also include `threadRoot`.
    - `threadRoot` String. The URL of the root post in the thread. Only needed in a reply; must also include `threadParent`.
+   - `mentions` Array<{url: String, name: String}. An array of users mentioned in the posts, who should be pinged.
 
 Post a new message to the feed.
 
