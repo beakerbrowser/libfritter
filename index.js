@@ -124,9 +124,9 @@ function setHooks (inst) {
   }
 
   function isAMentionOfUser (record) {
-    return record.hasOwnProperty('mentions') && record.mentions.find(x => {
+    return record.hasOwnProperty('mentions') && !(record.mentions.find(x => {
       return x.url == inst.userUrl
-    })
+    }) == undefined)
   }
 
   async function isNotificationIndexed (url) {
