@@ -159,7 +159,8 @@ await fritter.feed.post(alice, {
 await fritter.feed.post(alice, {
   text: 'Hello, world!',
   threadParent: parent.getRecordURL(), // url of message replying to
-  threadRoot: root.getRecordURL() // url of topmost ancestor message
+  threadRoot: root.getRecordURL(), // url of topmost ancestor message
+  createdAt: Date.parse('04 Dec 2017 00:12:00 GMT') // optional 
 })
 ```
 
